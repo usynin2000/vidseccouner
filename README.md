@@ -30,13 +30,6 @@ docker-compose up --build
 
 OR
 
-cd examples
-
-docker run -p 3030:80 \
-    -v $(pwd)/videos:/opt/static/videos \
-    -v $(pwd)/nginx.conf:/usr/local/nginx/conf/nginx.conf \
-    nytimes/nginx-vod-module
-
 http://localhost:3030/videos/
 
 docker run -p 3030:80 \
@@ -45,3 +38,5 @@ docker run -p 3030:80 \
     -v $(pwd)/logs:/var/log/nginx \
     --entrypoint sh nytimes/nginx-vod-module -c "mkdir -p /var/lib/nginx/body && chmod 777 /var/lib/nginx/body && exec /usr/local/nginx/sbin/nginx -g 'daemon off;'"
 
+
+http://localhost:3030/videos/

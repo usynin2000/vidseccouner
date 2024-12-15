@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   nginx:
-    image: nytimes/nginx-vod-module
+    build: .
     container_name: nginx_vod
     ports:
       - "3030:80"
@@ -9,5 +9,15 @@ services:
       - ./examples/videos:/opt/static/videos
       - ./examples/nginx.conf:/usr/local/nginx/conf/nginx.conf
       - ./examples/logs:/var/log/nginx
+    depends_on:
+      - app
     entrypoint: >
       sh -c "mkdir -p /var/lib/nginx/body && chmod 777 /var/lib/nginx/body && exec /usr/local/nginx/sbin/nginx -g 'daemon off;'"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app  # или использовать python:3.9-slim как базу
+    container_name: flask_app
+    ports:
+      - "8080:8080"
