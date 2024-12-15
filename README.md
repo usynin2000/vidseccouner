@@ -40,3 +40,9 @@ docker run -p 3030:80 \
 
 
 http://localhost:3030/videos/
+
+
+TO START
+```shell
+make up
+```
