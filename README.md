@@ -1,37 +1,22 @@
-nginx-vod-module-docker
-=======================
 
-[![Build Status](https://cloud.drone.io/api/badges/nytimes/nginx-vod-module-docker/status.svg)](https://cloud.drone.io/nytimes/nginx-vod-module-docker)
+1. Get sepoliat eth tokens: https://cloud.google.com/application/web3/faucet/ethereum/sepolia
+2. Get PRIVATE_KEY from Metamsk account, give to .env
+3. Get INFURA_API_KEY from https://www.infura.io/
+4. 
 
-This repository contains a Dockerfile for building nginx with [Kaltura's
-vod-module](https://github.com/kaltura/nginx-vod-module).
+Add to .env
+PRIVATE_KEY from metamask.
 
-Building locally
-----------------
 
-This repository uses Docker's multi-stage builds, therefore building this image
-requires Docker 17.05 or higher. Given that you have all the required
-dependencies, building the image is as simple as running a ``docker build``:
 
-```
-docker build -t nytimes/nginx-vod-module .
+
+```shell
+make up
 ```
 
-Docker Hub
-----------
-
-The image is available on Docker Hub: https://hub.docker.com/r/nytimes/nginx-vod-module/.
 
 
-
-chmod -R 755 $(pwd)/examples/videos
-
-docker-compose up --build
-
-OR
-
-http://localhost:3030/videos/
-
+for me:
 docker run -p 3030:80 \
     -v $(pwd)/videos:/opt/static/videos \
     -v $(pwd)/nginx.conf:/usr/local/nginx/conf/nginx.conf \
@@ -40,9 +25,3 @@ docker run -p 3030:80 \
 
 
 http://localhost:3030/videos/
-
-
-TO START
-```shell
-make up
-```
