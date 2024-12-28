@@ -32,6 +32,14 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'pause', time: video.currentTime.toString() }),
       });
+      fetch('/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          time: video.currentTime.toString(),
+          from: '0xac0fDFfe0F1E474D41Dc14B745f0846CB2362e9F'
+        }),
+      });
     });
 
     // Логирование перемотки
