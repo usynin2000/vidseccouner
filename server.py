@@ -22,7 +22,7 @@ def withdraw_tokens():
     logger.info(f"Starting to withdraw tokens:")
     data = request.get_json()
     ### cost of 1 second multipy for time was consumed
-    amount = 100000000000000000000 * float(data['time'])
+    amount = 10000000000000000000 * float(data['time'])
     logger.info(f"amount = {amount}")
 
     res = transfer_token(
