@@ -10,6 +10,7 @@ python = "^3.12"
 flask = "^3.1.0"
 web3 = "^7.6.1"
 python-dotenv = "^1.0.1"
+py-solc-x = "^2.0.3"
 
 
 [build-system]
