@@ -1,5 +1,4 @@
 from flask import Flask, request
-from transfer import transfer_token
 from config import PRIVATE_KEY
 
 import logging
@@ -22,17 +21,9 @@ def withdraw_tokens():
     logger.info(f"Starting to withdraw tokens:")
     data = request.get_json()
     ### cost of 1 second multipy for time was consumed
-    amount = 10000000000000000000 * float(data['time'])
-    logger.info(f"amount = {amount}")
+    logger.info(f"amount = {data['time']}")
 
-    res = transfer_token(
-        contract_address="0x40d87A3c7003A5A2dDA819721F998757fFcb65a8",
-        from_address=data['from'],
-        to_address="0x17dD57eaaF89aa437af2eE84Bd38c40AC99Ab7b2",
-        amount=int(amount),
-        private_key=PRIVATE_KEY
-    )
-    logger.info(f"All done {res["status"]}")
+    logger.info("All done}")
     return "All done", 200
 
 
