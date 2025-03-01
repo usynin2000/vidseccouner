@@ -3,54 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Player</title>
+  <title>Video & Wallet Integration</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .btn {
+      padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer;
+      border: none; background-color: #007BFF; color: white; border-radius: 4px;
+      margin-right: 1rem; margin-bottom: 1rem;
+    }
+    .btn:hover { background-color: #0056b3; }
+    .info { margin-top: 1rem; font-size: 1.1rem; }
+  </style>
 </head>
 <body>
-  <h1>Video Player</h1>
+  <h1>Video & Wallet Integration</h1>
+
   <video id="video" controls width="640" height="360">
     <source src="http://localhost:3030/videos/devito360p.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
-<!--  <video id="video2" controls width="640" height="360">-->
-<!--    <source src="http://localhost:3030/videos/devito480p.mp4" type="video/mp4">-->
-<!--    Your browser does not support the video tag.-->
-<!--  </video>-->
-<!--  <video id="video3" controls width="640" height="360">-->
-<!--    <source src="http://localhost:3030/videos/devito720p.mp4" type="video/mp4">-->
-<!--    Your browser does not support the video tag.-->
-<!--  </video>-->
 
+  <h2>SUB Token & Subscription Demo (Sepolia)</h2>
+  <button id="connectBtn" class="btn">Connect Wallet</button>
+  <button id="approveBtn" class="btn" disabled>Approve Unlimited</button>
+  <button id="subscribeBtn" class="btn" disabled>Subscribe 1 Year</button>
+
+  <div class="info">
+    <p><strong>Wallet Address:</strong> <span id="walletAddress">-</span></p>
+    <p><strong>SUB Balance:</strong> <span id="subBalance">-</span></p>
+    <p><strong>Subscription End:</strong> <span id="subEnd">-</span></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
     const video = document.getElementById('video');
+    let userAddress = null;
 
-    // Логирование на паузе
-    video.addEventListener('pause', () => {
-      console.log('Video paused at:', video.currentTime);
-      // Отправка данных на сервер
+    const SUB_TOKEN_ADDRESS = "0xCd33e6504dB957dcC70E99305CBa5a655Fa0c3Df";
+    const SUBSCRIPTION_CONTRACT_ADDRESS = "0xD01E201b6815918eaB868dc17Fd69a599A028678";
+    const SUB_TOKEN_ABI = ["function balanceOf(address) view returns (uint256)", "function approve(address spender, uint256 amount) returns (bool)"];
+    const SUBSCRIPTION_ABI = ["function subscriptionEnd(address) view returns (uint256)", "function subscribeOneYear()"];
+
+    let provider, signer, subToken, subscriptionContract;
+
+    const connectBtn = document.getElementById("connectBtn");
+    const approveBtn = document.getElementById("approveBtn");
+    const subscribeBtn = document.getElementById("subscribeBtn");
+
+    const walletAddressEl = document.getElementById("walletAddress");
+    const subBalanceEl = document.getElementById("subBalance");
+    const subEndEl = document.getElementById("subEnd");
+
+    async function updateData() {
+      if (!signer) return;
+      userAddress = await signer.getAddress();
+      walletAddressEl.textContent = userAddress;
+
+      const balanceBn = await subToken.balanceOf(userAddress);
+      const balance = ethers.utils.formatEther(balanceBn);
+      subBalanceEl.textContent = balance + " SUB";
+
+      const endBn = await subscriptionContract.subscriptionEnd(userAddress);
+      const endTimestamp = endBn.toNumber();
+      subEndEl.textContent = endTimestamp === 0 ? "Not subscribed" : new Date(endTimestamp * 1000).toLocaleString();
+    }
+
+    connectBtn.onclick = async () => {
+      if (!window.ethereum) {
+        alert("MetaMask not found");
+        return;
+      }
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+
+      userAddress = await signer.getAddress();
+      walletAddressEl.textContent = userAddress;
+
+      // Отправляем на сервер лог о подключении
+      fetch('/wallet-connect', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: userAddress }),
+      });
+
+      subToken = new ethers.Contract(SUB_TOKEN_ADDRESS, SUB_TOKEN_ABI, signer);
+      subscriptionContract = new ethers.Contract(SUBSCRIPTION_CONTRACT_ADDRESS, SUBSCRIPTION_ABI, signer);
+
+      approveBtn.disabled = false;
+      subscribeBtn.disabled = false;
+
+      await updateData();
+    };
+
+    function sendLog(event, time) {
+      const data = { event, time, wallet: userAddress || "Not connected" };
+      console.log(data);
       fetch('/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event: 'pause', time: video.currentTime.toString() }),
+        body: JSON.stringify(data)
       });
-      fetch('/withdraw', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          time: video.currentTime.toString(),
-          from: '0xac0fDFfe0F1E474D41Dc14B745f0846CB2362e9F'
-        }),
-      });
-    });
+    }
 
-    // Логирование перемотки
-    video.addEventListener('seeked', () => {
-      console.log('Video seeked to:', video.currentTime);
-      fetch('/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event: 'seeked', time: video.currentTime }),
-      });
-    });
+    video.addEventListener('pause', () => sendLog('pause', video.currentTime));
+    video.addEventListener('seeked', () => sendLog('seeked', video.currentTime));
   </script>
 </body>
 </html>
